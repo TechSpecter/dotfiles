@@ -30,7 +30,6 @@ RUN apt-get update \
   unzip \
   uuid-runtime \
   wget \
-  neovim \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -41,9 +40,10 @@ ARG DEST=/usr/local/bin
 ARG ARCH=amd64
 
 # Install nvim from release deb distribution
-#ARG NVIMVER=0.9.1
-# RUN curl -sLO "https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.tar.gz" && tar -xzvf nvim-linux64.tar.gz \
-#   && cp ./nvim-linux64/bin/nvim "$DEST"
+ARG NVIMVER=0.8.0
+RUN cd /tmp/ \
+  && curl -sLO https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.deb \
+  && apt install ./nvim-linux64.deb
    
 # Install tmux - terminal multiplexer
 ARG TMUXVER=3.2a
@@ -70,19 +70,6 @@ RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-lin
 ARG NODEVER=lts
 RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | bash - && apt-get install -y nodejs
 
-# Install global npm modules for Node.js
-RUN npm install -g \
-  url-decode-encode-cli \
-  httpie \
-  prettier \ 
-  unzip \
-  jwt-cli \
-  lodash \
-  lorem-ipsum \
-  markdownlint-cli \
-  docsify-cli \
-  yarn
-
 # Install gh - CLI for GitHub
 ARG GHVER=2.28.0
 RUN curl -fsSLO "https://github.com/cli/cli/releases/download/v${GHVER}/gh_${GHVER}_linux_${ARCH}.deb" && dpkg -i "./gh_${GHVER}_linux_${ARCH}.deb"
@@ -107,6 +94,9 @@ RUN curl -fsSL "https://github.com/gokcehan/lf/releases/download/r${LFVER}/lf-li
 ARG SHFMTVER=3.7.0
 RUN curl -fsSL "https://github.com/mvdan/sh/releases/download/v${SHFMTVER}/shfmt_v${SHFMTVER}_linux_amd64" -o "$DEST/shfmt" && chmod +x "$DEST/shfmt"
 
+# Install Steampipe - SQL for APIs
+RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
+
 # Clean up temp dir
 RUN rm -rf /tmp/*
 
@@ -128,14 +118,32 @@ USER $USERNAME
 WORKDIR /home/$USERNAME
 ENV TERM xterm-256color
 
-# Install ijq
-ARG IJQVER=0.4.1
-RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-linux-amd64.tar.gz" \
-  && tar xf "ijq-$IJQVER-linux-amd64.tar.gz" \
-  && cd "ijq-$IJQVER" \
-  && cp ijq /home/$USERNAME/bin
+RUN npm config set prefix "/home/$USERNAME/.npm-global"
+# Install global npm modules for Node.js
+RUN npm install -g \
+  url-decode-encode-cli \
+  httpie \
+  prettier \ 
+  unzip \
+  jwt-cli \
+  lodash \
+  lorem-ipsum \
+  markdownlint-cli \
+  bash-language-server \
+  docsify-cli \
+  yarn
 
-RUN rm -rf /home/$USERNAME/*
+
+# Set up dotfiles
+#RUN git clone https://github.com/qmacro/dotfiles.git && cd dotfiles/ && ./dotsetup
+# Install Vim plugins
+#RUN vim +'PackerInstall' +qa > /dev/null 2>&1
+
+# Add extra bashrc.d file to append $HOME/.npm-global/bin to $PATH
+#RUN echo 'export PATH=$PATH:$HOME/.npm-global/bin' > $HOME/dotfiles/bashrc.d/99-docker-npm-global-bin-path.sh
+
+# Install Packer (for NeoVim) core
+RUN git clone --depth 1 https://github.com/wbthomason/packer.nvim $HOME/.local/share/nvim/site/pack/packer/start/packer.nvim
 
 # Off we go - based on tmux, the terminal multiplexer
-CMD ["tmux", "-u", "new", "-s", "main"]cd
+CMD ["tmux", "-u", "new", "-s", "main"]
