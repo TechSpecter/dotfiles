@@ -1,0 +1,42 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "name": "NodeJsDevContainer",
+    "runArgs": [
+        "--platform=linux/amd64"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {},
+            "extensions": [
+                "stylelint.vscode-stylelint",
+                "rangav.vscode-thunder-client",
+                "ms-azuretools.vscode-docker",
+                "dbaeumer.vscode-eslint",
+                "dotenv.dotenv-vscode",
+                "vscode-icons-team.vscode-icons",
+                "esbenp.prettier-vscode",
+                "kamikillerto.vscode-colorize",
+                "ritwickdey.LiveServer",
+                "christian-kohler.path-intellisense",
+                "oderwat.indent-rainbow",
+                "chrmarti.regex",
+                "jock.svg",
+                "wix.vscode-import-cost",
+                "johnpapa.vscode-peacock",
+                "yzhang.markdown-all-in-one",
+                "xabikos.JavaScriptSnippets",
+                "TabNine.tabnine-vscode",
+                "mitchdenny.ecdc"
+            ]
+        },
+        "codespaces": {
+            "openFiles": [
+                "README"
+            ]
+        }
+    },
+    "forwardPorts": [
+    ]
+}
