@@ -18,7 +18,6 @@ RUN apt-get update \
   libevent-dev \
   libgraph-easy-perl \
   lsb-release \
-  lynx \
   man \
   ncat \
   ncurses-dev \
@@ -31,6 +30,7 @@ RUN apt-get update \
   unzip \
   uuid-runtime \
   wget \
+  neovim \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -41,9 +41,9 @@ ARG DEST=/usr/local/bin
 ARG ARCH=amd64
 
 # Install nvim from release deb distribution
-ARG NVIMVER=0.9.1
- RUN curl -sLO "https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.tar.gz" && tar -xzvf nvim-linux64.tar.gz \
-   && cp ./nvim-linux64/bin/nvim "$DEST"
+#ARG NVIMVER=0.9.1
+# RUN curl -sLO "https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.tar.gz" && tar -xzvf nvim-linux64.tar.gz \
+#   && cp ./nvim-linux64/bin/nvim "$DEST"
    
 # Install tmux - terminal multiplexer
 ARG TMUXVER=3.2a
@@ -53,6 +53,13 @@ RUN curl -fsSL "https://github.com/tmux/tmux/releases/download/$TMUXVER/tmux-$TM
 # Install bat - cat with wings
 ARG BATVER=0.23.0
 RUN curl -fsSLO "https://github.com/sharkdp/bat/releases/download/v$BATVER/bat_${BATVER}_${ARCH}.deb" && dpkg -i "./bat_${BATVER}_${ARCH}.deb"
+
+# Install ijq
+ARG IJQVER=0.4.1
+RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-linux-amd64.tar.gz" \
+  && tar xf "ijq-$IJQVER-linux-amd64.tar.gz" \
+  && cp "ijq-$IJQVER/ijq" $DEST \
+  && cp "ijq-$IJQVER/ijq.1" '/usr/local/share/man/man1'
 
 #Install NVM
 # ARG NVMVER=0.39.5
@@ -131,4 +138,4 @@ RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-lin
 RUN rm -rf /home/$USERNAME/*
 
 # Off we go - based on tmux, the terminal multiplexer
-CMD ["tmux", "-u", "new", "-s", "main"]
+CMD ["tmux", "-u", "new", "-s", "main"]cd
