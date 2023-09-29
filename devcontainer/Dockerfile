@@ -1,10 +1,8 @@
 FROM --platform=linux/amd64 debian:12.1 as base
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update \
   && apt-get install -y \
   apt-transport-https \
-  bash-completion \
   bc \
   build-essential \
   ca-certificates \
@@ -30,8 +28,14 @@ RUN apt-get update \
   unzip \
   uuid-runtime \
   wget \
+  stow \
+  zsh \
+  locales \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  && locale-gen en_US.UTF-8
+
+SHELL ["/bin/zsh", "-o", "pipefail", "-c"]
 
 WORKDIR /tmp/
 ARG DEST=/usr/local/bin
@@ -62,13 +66,20 @@ RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-lin
   && cp "ijq-$IJQVER/ijq.1" '/usr/local/share/man/man1'
 
 #Install NVM
-# ARG NVMVER=0.39.5
-# RUN curl -fsSL "https://github.com/nvm-sh/nvm/archive/refs/tags/v$NVMVER.tar.gz" | tar -xzf - \
-#   && cd "nvm-$NVMVER" && 
+ARG NVMVER=v0.39.5
+curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVMVER}/install.sh" | zsh || true
 
 # Install specific Node.js
 ARG NODEVER=lts
-RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | bash - && apt-get install -y nodejs
+nvm install --lts
+# RUN cd /opt \
+#  && curl -LO "https://nodejs.org/dist/${NODEVER}/node-${NODEVER}-linux-x64.tar.xz" \
+#  && tar xJf "node-${NODEVER}-linux-x64.tar.xz" \
+#  && rm "node-${NODEVER}-linux-x64.tar.xz"
+
+ENV PATH=/opt/node-${NODEVER}-linux-x64/bin:${PATH}
+
+RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | zsh - && apt-get install -y nodejs
 
 # Install gh - CLI for GitHub
 ARG GHVER=2.28.0
@@ -94,8 +105,12 @@ RUN curl -fsSL "https://github.com/gokcehan/lf/releases/download/r${LFVER}/lf-li
 ARG SHFMTVER=3.7.0
 RUN curl -fsSL "https://github.com/mvdan/sh/releases/download/v${SHFMTVER}/shfmt_v${SHFMTVER}_linux_amd64" -o "$DEST/shfmt" && chmod +x "$DEST/shfmt"
 
+# Install Dockerfile linter hadolint
+ARG HADOLINTVER=2.8.0
+RUN curl -fsSL "https://github.com/hadolint/hadolint/releases/download/v${HADOLINTVER}/hadolint-Linux-x86_64" -o "$DEST/hadolint" && chmod +x "$DEST/hadolint"
+
 # Install Steampipe - SQL for APIs
-RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
+RUN /bin/zsh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
 
 # Clean up temp dir
 RUN rm -rf /tmp/*
@@ -105,7 +120,7 @@ ARG USERNAME=rahul
 RUN adduser \
   --quiet \
   --disabled-password \
-  --shell /bin/bash \
+  --shell /bin/zsh \
   --home /home/$USERNAME \
   --gecos "Dev User" \
   $USERNAME \
@@ -118,6 +133,9 @@ USER $USERNAME
 WORKDIR /home/$USERNAME
 ENV TERM xterm-256color
 
+# generate locale for rahul
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && /usr/sbin/locale-gen
+
 RUN npm config set prefix "/home/$USERNAME/.npm-global"
 # Install global npm modules for Node.js
 RUN npm install -g \
@@ -129,10 +147,15 @@ RUN npm install -g \
   lodash \
   lorem-ipsum \
   markdownlint-cli \
-  bash-language-server \
   docsify-cli \
   yarn
 
+# run the installation script  
+RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+
+# install powerlevel10k
+RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+RUN echo ZSH_THEME="powerlevel10k/powerlevel10k" >> $HOME/.zshrc
 
 # Set up dotfiles
 #RUN git clone https://github.com/qmacro/dotfiles.git && cd dotfiles/ && ./dotsetup
@@ -143,7 +166,8 @@ RUN npm install -g \
 #RUN echo 'export PATH=$PATH:$HOME/.npm-global/bin' > $HOME/dotfiles/bashrc.d/99-docker-npm-global-bin-path.sh
 
 # Install Packer (for NeoVim) core
-RUN git clone --depth 1 https://github.com/wbthomason/packer.nvim $HOME/.local/share/nvim/site/pack/packer/start/packer.nvim
+#RUN git clone --depth 1 https://github.com/wbthomason/packer.nvim $HOME/.local/share/nvim/site/pack/packer/start/packer.nvim
 
 # Off we go - based on tmux, the terminal multiplexer
-CMD ["tmux", "-u", "new", "-s", "main"]
+#CMD ["tmux", "-u", "new", "-s", "main"]
+CMD ["neofetch"]
