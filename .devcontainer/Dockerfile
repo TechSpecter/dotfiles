@@ -65,13 +65,6 @@ RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-lin
   && cp "ijq-$IJQVER/ijq" $DEST \
   && cp "ijq-$IJQVER/ijq.1" '/usr/local/share/man/man1'
 
-#Install Node.js via NVM
-ARG NVMVER=0.39.5
-ARG NODEVER=v18.18.0
-RUN curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${NVMVER}/install.sh" | bash
-RUN source "$HOME/.nvm/nvm.sh" && nvm install ${NODEVER} && nvm use ${NODEVER}
-#RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | zsh - && apt-get install -y nodejs
-
 # Install gh - CLI for GitHub
 ARG GHVER=2.28.0
 RUN curl -fsSLO "https://github.com/cli/cli/releases/download/v${GHVER}/gh_${GHVER}_linux_${ARCH}.deb" && dpkg -i "./gh_${GHVER}_linux_${ARCH}.deb"
@@ -126,6 +119,14 @@ ENV TERM xterm-256color
 
 # generate locale for rahul
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && /usr/sbin/locale-gen
+
+
+#Install Node.js via NVM
+ARG NVMVER=0.39.5
+ARG NODEVER=v18.18.0
+RUN curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${NVMVER}/install.sh" | bash
+RUN source "$HOME/.nvm/nvm.sh" && nvm install ${NODEVER} && nvm use ${NODEVER}
+#RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | zsh - && apt-get install -y nodejs
 
 # RUN npm config set prefix "/home/$USERNAME/.npm-global"
 
