@@ -35,7 +35,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && locale-gen en_US.UTF-8
 
-SHELL ["/bin/zsh", "-o", "pipefail", "-c"]
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# generate locale for rahul
+#RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && /usr/sbin/locale-gen
 
 WORKDIR /tmp/
 ARG DEST=/usr/local/bin
@@ -94,17 +97,19 @@ ARG HADOLINTVER=2.8.0
 RUN curl -fsSL "https://github.com/hadolint/hadolint/releases/download/v${HADOLINTVER}/hadolint-Linux-x86_64" -o "$DEST/hadolint" && chmod +x "$DEST/hadolint"
 
 # Install Steampipe - SQL for APIs
-RUN /bin/zsh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
 
 # Clean up temp dir
 RUN rm -rf /tmp/*
+
+RUN chsh -s /bin/zsh 
 
 # Set up non-root user
 ARG USERNAME=rahul
 RUN adduser \
   --quiet \
   --disabled-password \
-  --shell /bin/bash \
+  --shell /bin/zsh \
   --home /home/$USERNAME \
   --gecos "Dev User" \
   $USERNAME \
@@ -117,31 +122,30 @@ USER $USERNAME
 WORKDIR /home/$USERNAME
 ENV TERM xterm-256color
 
-# generate locale for rahul
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && /usr/sbin/locale-gen
+# RUN npm config set prefix "/home/$USERNAME/.npm-global"
 
+# RUN echo 'export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
 
 #Install Node.js via NVM
-ARG NVMVER=0.39.5
+ARG NVMVER=v0.39.5
 ARG NODEVER=v18.18.0
-RUN curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v${NVMVER}/install.sh" | bash
+RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 RUN source "$HOME/.nvm/nvm.sh" && nvm install ${NODEVER} && nvm use ${NODEVER}
 #RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | zsh - && apt-get install -y nodejs
 
-# RUN npm config set prefix "/home/$USERNAME/.npm-global"
-
 # Install global npm modules for Node.js
-RUN npm install -g \
-  url-decode-encode-cli \
-  httpie \
-  prettier \ 
-  unzip \
-  jwt-cli \
-  lodash \
-  lorem-ipsum \
-  markdownlint-cli \
-  docsify-cli \
-  yarn
+# RUN npm install -g \
+#   url-decode-encode-cli \
+#   httpie \
+#   prettier \ 
+#   unzip \
+#   jwt-cli \
+#   lodash \
+#   lorem-ipsum \
+#   markdownlint-cli \
+#   docsify-cli \
+#   yarn
 
 # run the installation script  
 RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
