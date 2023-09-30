@@ -43,7 +43,7 @@ ARG DEST=/usr/local/bin
 #RUN ARCH=echo "$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)"
 ARG ARCH=amd64
 
-# Install nvim from release deb distribution
+# Install neovim from release deb distribution
 ARG NVIMVER=0.8.0
 RUN cd /tmp/ \
   && curl -sLO https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.deb \
@@ -65,21 +65,12 @@ RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-lin
   && cp "ijq-$IJQVER/ijq" $DEST \
   && cp "ijq-$IJQVER/ijq.1" '/usr/local/share/man/man1'
 
-#Install NVM
+#Install Node.js via NVM
 ARG NVMVER=v0.39.5
-curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVMVER}/install.sh" | zsh || true
-
-# Install specific Node.js
-ARG NODEVER=lts
-nvm install --lts
-# RUN cd /opt \
-#  && curl -LO "https://nodejs.org/dist/${NODEVER}/node-${NODEVER}-linux-x64.tar.xz" \
-#  && tar xJf "node-${NODEVER}-linux-x64.tar.xz" \
-#  && rm "node-${NODEVER}-linux-x64.tar.xz"
-
-ENV PATH=/opt/node-${NODEVER}-linux-x64/bin:${PATH}
-
-RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | zsh - && apt-get install -y nodejs
+ARG NODEVER=v18.18.0
+RUN curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVMVER}/install.sh" | bash
+RUN source "$HOME/.nvm/nvm.sh" && nvm install ${NODEVER} && nvm use ${NODEVER}
+#RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | zsh - && apt-get install -y nodejs
 
 # Install gh - CLI for GitHub
 ARG GHVER=2.28.0
@@ -126,8 +117,8 @@ RUN adduser \
   $USERNAME \
   && chown $USERNAME:$USERNAME /tmp/
 
-RUN mkdir /home/$USERNAME/.npm-global \
-  && chown $USERNAME:$USERNAME /home/$USERNAME/.npm-global
+#RUN mkdir /home/$USERNAME/.npm-global \
+#  && chown $USERNAME:$USERNAME /home/$USERNAME/.npm-global
 
 USER $USERNAME
 WORKDIR /home/$USERNAME
@@ -136,7 +127,15 @@ ENV TERM xterm-256color
 # generate locale for rahul
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && /usr/sbin/locale-gen
 
-RUN npm config set prefix "/home/$USERNAME/.npm-global"
+#Install Node.js via NVM
+ARG NVMVER=v0.39.5
+ARG NODEVER=v18.18.0
+RUN curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVMVER}/install.sh" | bash
+RUN source "$HOME/.nvm/nvm.sh" && nvm install ${NODEVER} && nvm use ${NODEVER}
+#RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | zsh - && apt-get install -y nodejs
+
+# RUN npm config set prefix "/home/$USERNAME/.npm-global"
+
 # Install global npm modules for Node.js
 RUN npm install -g \
   url-decode-encode-cli \
