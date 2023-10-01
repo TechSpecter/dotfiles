@@ -137,9 +137,9 @@ ENV TERM xterm-256color
 #Install Node.js via NVM
 ARG NVMVER=v0.39.5
 ARG NODEVER=v18.18.0
-ARG NVM_INSTALL_PATH=$HOME/.nvm/versions/node/$NODEVER
+ARG NVM_INSTALL_PATH=/home/$USERNAME/.nvm/versions/node/$NODEVER
 RUN wget -qO- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVMVER/install.sh" | bash
-RUN source $HOME/.nvm/nvm.sh \
+RUN source /home/$USERNAME/.nvm/nvm.sh \
   && nvm install $NODEVER \
   && nvm alias default $NODEVER \
   && nvm use default \
@@ -157,7 +157,13 @@ RUN source $HOME/.nvm/nvm.sh \
 ENV NODE_PATH $NVM_INSTALL_PATH/lib/node_modules
 ENV PATH $NVM_INSTALL_PATH/bin:$PATH
 
-#RUN rm -rf /home/$USERNAME/*
+# Set up dotfiles and copy the configurations using Stow
+RUN mkdir -p /home/$USERNAME/.config \
+  && git clone https://github.com/guptar85/dotfiles.git \
+  && cd dotfiles/ \
+  && stow lf \
+  newsboat \
+  tmux 
 
 # Off we go - based on tmux, the terminal multiplexer
 CMD ["tmux", "-u", "new", "-s", "main"]
