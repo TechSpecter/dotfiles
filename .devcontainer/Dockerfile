@@ -1,41 +1,49 @@
 FROM --platform=linux/amd64 debian:12.1 as base
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update \
   && apt-get install -y \
   apt-transport-https \
+  bash-completion \
   bc \
   build-essential \
   ca-certificates \
   cron \
   curl \
+  entr \
   exiftool \
+  fd-find \
   file \
   fzf \
   gnupg \
+  highlight \
+  iputils-ping \
   jq \
   libevent-dev \
   libgraph-easy-perl \
   lsb-release \
+  lynx \
   man \
+  miller \
   ncat \
   ncurses-dev \
   neofetch \
+  newsboat \
   openssh-server \
   pandoc \
   pass \
+  ripgrep \
   shellcheck \
+  stow \
   sudo \
+  toot \
   unzip \
   uuid-runtime \
+  vim-nox \
+  w3m \
   wget \
-  stow \
-  zsh \
-  locales \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* \
-  && locale-gen en_US.UTF-8
-
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp/
 ARG DEST=/usr/local/bin
@@ -44,11 +52,10 @@ ARG DEST=/usr/local/bin
 ARG ARCH=amd64
 
 # Install neovim from release deb distribution
-ARG NVIMVER=0.8.0
-RUN cd /tmp/ \
-  && curl -sLO https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.deb \
-  && apt install ./nvim-linux64.deb
-   
+ARG NVIMVER=0.9.1
+RUN curl -sLO "https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.tar.gz" && tar -xzvf nvim-linux64.tar.gz \
+  && cp ./nvim-linux64/bin/nvim "$DEST"
+
 # Install tmux - terminal multiplexer
 ARG TMUXVER=3.2a
 RUN curl -fsSL "https://github.com/tmux/tmux/releases/download/$TMUXVER/tmux-$TMUXVER.tar.gz" | tar -xzf - \
@@ -57,13 +64,6 @@ RUN curl -fsSL "https://github.com/tmux/tmux/releases/download/$TMUXVER/tmux-$TM
 # Install bat - cat with wings
 ARG BATVER=0.23.0
 RUN curl -fsSLO "https://github.com/sharkdp/bat/releases/download/v$BATVER/bat_${BATVER}_${ARCH}.deb" && dpkg -i "./bat_${BATVER}_${ARCH}.deb"
-
-# Install ijq
-ARG IJQVER=0.4.1
-RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-linux-${ARCH}.tar.gz" \
- && tar xf "ijq-$IJQVER-linux-amd64.tar.gz" \
- && cp "ijq-$IJQVER/ijq" $DEST \
- && cp "ijq-$IJQVER/ijq.1" '/usr/local/share/man/man1'
 
 # Install gh - CLI for GitHub
 ARG GHVER=2.28.0
@@ -83,18 +83,21 @@ RUN curl -fsSL "https://github.com/extrawurst/gitui/releases/download/v${GITUIVE
 
 # Install lf - a terminal file manager
 ARG LFVER=31
-RUN curl -fsSL "https://github.com/gokcehan/lf/releases/download/r${LFVER}/lf-linux-${ARCH}.tar.gz" | tar -C "$DEST" -xzf - lf
+RUN curl -fsSL "https://github.com/gokcehan/lf/releases/download/r${LFVER}/lf-linux-amd64.tar.gz" | tar -C "$DEST" -xzf - lf
 
 # Install shfmt - shell script formatter
 ARG SHFMTVER=3.7.0
-RUN curl -fsSL "https://github.com/mvdan/sh/releases/download/v${SHFMTVER}/shfmt_v${SHFMTVER}_linux_${ARCH}" -o "$DEST/shfmt" && chmod +x "$DEST/shfmt"
+RUN curl -fsSL "https://github.com/mvdan/sh/releases/download/v${SHFMTVER}/shfmt_v${SHFMTVER}_linux_amd64" -o "$DEST/shfmt" && chmod +x "$DEST/shfmt"
 
 # Install Dockerfile linter hadolint
 ARG HADOLINTVER=2.8.0
 RUN curl -fsSL "https://github.com/hadolint/hadolint/releases/download/v${HADOLINTVER}/hadolint-Linux-x86_64" -o "$DEST/hadolint" && chmod +x "$DEST/hadolint"
 
 # Install Steampipe - SQL for APIs
-RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
+RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/main/install.sh)"
+
+# Install Azure CLI
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Clean up temp dir
 RUN rm -rf /tmp/*
@@ -124,36 +127,40 @@ RUN /bin/bash -c "source $HOME/.nvm/nvm.sh \
   && nvm alias default $NODEVER \
   && nvm use default \
   && npm install -g \
-     url-decode-encode-cli \
-     httpie \
-     prettier \ 
-     unzip \
-     jwt-cli \
-     lodash \
-     lorem-ipsum \
-     markdownlint-cli \
-     docsify-cli \
-     yarn"
+  url-decode-encode-cli \
+  httpie \
+  prettier \ 
+  unzip \
+  jwt-cli \
+  lodash \
+  lorem-ipsum \
+  markdownlint-cli \
+  docsify-cli \
+  yarn"
 ENV NODE_PATH $NVM_INSTALL_PATH/lib/node_modules
 ENV PATH $NVM_INSTALL_PATH/bin:$PATH
 
-# run the installation script  
-#RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+# Install ijq
+ARG IJQVER=0.4.1
+RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-linux-amd64.tar.gz" \
+  && tar xf "ijq-$IJQVER-linux-amd64.tar.gz" \
+  && cd "ijq-$IJQVER" \
+  && cp ijq /home/$USERNAME/bin
 
-# install powerlevel10k
-#RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-#RUN echo ZSH_THEME="powerlevel10k/powerlevel10k" >> $HOME/.zshrc
+# Install ngrok
+ARG NGROKVER=3
+RUN curl \
+  --silent \
+  --location \
+  --url "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v${NGROKVER}-stable-linux-amd64.tgz" \
+  | tar \
+  --extract \
+  --gunzip \
+  --file - \
+  --directory /home/$USERNAME/bin/ \
+  ngrok
 
-# Set up dotfiles
-#RUN git clone https://github.com/qmacro/dotfiles.git && cd dotfiles/ && ./dotsetup
-# Install Vim plugins
-#RUN vim +'PackerInstall' +qa > /dev/null 2>&1
-
-# Add extra bashrc.d file to append $HOME/.npm-global/bin to $PATH
-#RUN echo 'export PATH=$PATH:$HOME/.npm-global/bin' > $HOME/dotfiles/bashrc.d/99-docker-npm-global-bin-path.sh
-
-# Install Packer (for NeoVim) core
-#RUN git clone --depth 1 https://github.com/wbthomason/packer.nvim $HOME/.local/share/nvim/site/pack/packer/start/packer.nvim
+#RUN rm -rf /home/$USERNAME/*
 
 # Off we go - based on tmux, the terminal multiplexer
 CMD ["tmux", "-u", "new", "-s", "main"]
