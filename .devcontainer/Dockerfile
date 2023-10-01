@@ -21,6 +21,8 @@ RUN apt-get update \
   jq \
   libevent-dev \
   libgraph-easy-perl \
+  locales \
+  locales-all \
   lsb-release \
   lynx \
   man \
@@ -43,7 +45,9 @@ RUN apt-get update \
   w3m \
   wget \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  && locale-gen "en_US.UTF-8" \
+  && dpkg-reconfigure locales
 
 WORKDIR /tmp/
 ARG DEST=/usr/local/bin
@@ -52,9 +56,15 @@ ARG DEST=/usr/local/bin
 ARG ARCH=amd64
 
 # Install neovim from release deb distribution
-ARG NVIMVER=0.9.1
-RUN curl -sLO "https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.tar.gz" && tar -xzvf nvim-linux64.tar.gz \
-  && cp ./nvim-linux64/bin/nvim "$DEST"
+#ARG NVIMVER=0.9.1
+#RUN curl -sLO "https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.tar.gz" && tar -xzvf nvim-linux64.tar.gz \
+#  && cp ./nvim-linux64/bin/nvim "$DEST"
+
+# Install nvim from release deb distribution
+ARG NVIMVER=0.8.0
+RUN cd /tmp/ \
+  && curl -sLO https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.deb \
+  && apt install ./nvim-linux64.deb
 
 # Install tmux - terminal multiplexer
 ARG TMUXVER=3.2a
