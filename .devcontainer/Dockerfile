@@ -99,6 +99,13 @@ RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/
 # Install Azure CLI
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
+# Install ijq
+ARG IJQVER=0.4.1
+RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-linux-amd64.tar.gz" \
+  && tar xf "ijq-$IJQVER-linux-amd64.tar.gz" \
+  && cp "ijq-$IJQVER/ijq" $DEST \
+  && cp "ijq-$IJQVER/ijq.1" '/usr/local/share/man/man1'
+
 # Clean up temp dir
 RUN rm -rf /tmp/*
 
@@ -122,7 +129,7 @@ ARG NVMVER=v0.39.5
 ARG NODEVER=v18.18.0
 ARG NVM_INSTALL_PATH=$HOME/.nvm/versions/node/$NODEVER
 RUN wget -qO- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVMVER/install.sh" | bash
-RUN /bin/bash -c "source $HOME/.nvm/nvm.sh \
+RUN source $HOME/.nvm/nvm.sh \
   && nvm install $NODEVER \
   && nvm alias default $NODEVER \
   && nvm use default \
@@ -136,29 +143,9 @@ RUN /bin/bash -c "source $HOME/.nvm/nvm.sh \
   lorem-ipsum \
   markdownlint-cli \
   docsify-cli \
-  yarn"
+  yarn
 ENV NODE_PATH $NVM_INSTALL_PATH/lib/node_modules
 ENV PATH $NVM_INSTALL_PATH/bin:$PATH
-
-# Install ijq
-ARG IJQVER=0.4.1
-RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-linux-amd64.tar.gz" \
-  && tar xf "ijq-$IJQVER-linux-amd64.tar.gz" \
-  && cd "ijq-$IJQVER" \
-  && cp ijq /home/$USERNAME/bin
-
-# Install ngrok
-ARG NGROKVER=3
-RUN curl \
-  --silent \
-  --location \
-  --url "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v${NGROKVER}-stable-linux-amd64.tgz" \
-  | tar \
-  --extract \
-  --gunzip \
-  --file - \
-  --directory /home/$USERNAME/bin/ \
-  ngrok
 
 #RUN rm -rf /home/$USERNAME/*
 
