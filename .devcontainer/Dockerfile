@@ -37,9 +37,6 @@ RUN apt-get update \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# generate locale for rahul
-#RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && /usr/sbin/locale-gen
-
 WORKDIR /tmp/
 ARG DEST=/usr/local/bin
 
@@ -63,10 +60,10 @@ RUN curl -fsSLO "https://github.com/sharkdp/bat/releases/download/v$BATVER/bat_$
 
 # Install ijq
 ARG IJQVER=0.4.1
-RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-linux-amd64.tar.gz" \
-  && tar xf "ijq-$IJQVER-linux-amd64.tar.gz" \
-  && cp "ijq-$IJQVER/ijq" $DEST \
-  && cp "ijq-$IJQVER/ijq.1" '/usr/local/share/man/man1'
+RUN wget "https://git.sr.ht/~gpanders/ijq/refs/download/v$IJQVER/ijq-$IJQVER-linux-${ARCH}.tar.gz" \
+ && tar xf "ijq-$IJQVER-linux-amd64.tar.gz" \
+ && cp "ijq-$IJQVER/ijq" $DEST \
+ && cp "ijq-$IJQVER/ijq.1" '/usr/local/share/man/man1'
 
 # Install gh - CLI for GitHub
 ARG GHVER=2.28.0
@@ -86,11 +83,11 @@ RUN curl -fsSL "https://github.com/extrawurst/gitui/releases/download/v${GITUIVE
 
 # Install lf - a terminal file manager
 ARG LFVER=31
-RUN curl -fsSL "https://github.com/gokcehan/lf/releases/download/r${LFVER}/lf-linux-amd64.tar.gz" | tar -C "$DEST" -xzf - lf
+RUN curl -fsSL "https://github.com/gokcehan/lf/releases/download/r${LFVER}/lf-linux-${ARCH}.tar.gz" | tar -C "$DEST" -xzf - lf
 
 # Install shfmt - shell script formatter
 ARG SHFMTVER=3.7.0
-RUN curl -fsSL "https://github.com/mvdan/sh/releases/download/v${SHFMTVER}/shfmt_v${SHFMTVER}_linux_amd64" -o "$DEST/shfmt" && chmod +x "$DEST/shfmt"
+RUN curl -fsSL "https://github.com/mvdan/sh/releases/download/v${SHFMTVER}/shfmt_v${SHFMTVER}_linux_${ARCH}" -o "$DEST/shfmt" && chmod +x "$DEST/shfmt"
 
 # Install Dockerfile linter hadolint
 ARG HADOLINTVER=2.8.0
@@ -102,57 +99,50 @@ RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampip
 # Clean up temp dir
 RUN rm -rf /tmp/*
 
-RUN chsh -s /bin/zsh 
-
 # Set up non-root user
 ARG USERNAME=rahul
 RUN adduser \
   --quiet \
   --disabled-password \
-  --shell /bin/zsh \
+  --shell /bin/bash \
   --home /home/$USERNAME \
   --gecos "Dev User" \
   $USERNAME \
   && chown $USERNAME:$USERNAME /tmp/
 
-#RUN mkdir /home/$USERNAME/.npm-global \
-#  && chown $USERNAME:$USERNAME /home/$USERNAME/.npm-global
-
 USER $USERNAME
 WORKDIR /home/$USERNAME
 ENV TERM xterm-256color
 
-# RUN npm config set prefix "/home/$USERNAME/.npm-global"
-
-# RUN echo 'export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
-
 #Install Node.js via NVM
 ARG NVMVER=v0.39.5
 ARG NODEVER=v18.18.0
-RUN wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-RUN source "$HOME/.nvm/nvm.sh" && nvm install ${NODEVER} && nvm use ${NODEVER}
-#RUN curl -fsSL "https://deb.nodesource.com/setup_$NODEVER.x" | zsh - && apt-get install -y nodejs
-
-# Install global npm modules for Node.js
-# RUN npm install -g \
-#   url-decode-encode-cli \
-#   httpie \
-#   prettier \ 
-#   unzip \
-#   jwt-cli \
-#   lodash \
-#   lorem-ipsum \
-#   markdownlint-cli \
-#   docsify-cli \
-#   yarn
+ARG NVM_INSTALL_PATH=$HOME/.nvm/versions/node/$NODEVER
+RUN wget -qO- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVMVER/install.sh" | bash
+RUN /bin/bash -c "source $HOME/.nvm/nvm.sh \
+  && nvm install $NODEVER \
+  && nvm alias default $NODEVER \
+  && nvm use default \
+  && npm install -g \
+     url-decode-encode-cli \
+     httpie \
+     prettier \ 
+     unzip \
+     jwt-cli \
+     lodash \
+     lorem-ipsum \
+     markdownlint-cli \
+     docsify-cli \
+     yarn"
+ENV NODE_PATH $NVM_INSTALL_PATH/lib/node_modules
+ENV PATH $NVM_INSTALL_PATH/bin:$PATH
 
 # run the installation script  
-RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+#RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
 
 # install powerlevel10k
-RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-RUN echo ZSH_THEME="powerlevel10k/powerlevel10k" >> $HOME/.zshrc
+#RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+#RUN echo ZSH_THEME="powerlevel10k/powerlevel10k" >> $HOME/.zshrc
 
 # Set up dotfiles
 #RUN git clone https://github.com/qmacro/dotfiles.git && cd dotfiles/ && ./dotsetup
@@ -166,5 +156,4 @@ RUN echo ZSH_THEME="powerlevel10k/powerlevel10k" >> $HOME/.zshrc
 #RUN git clone --depth 1 https://github.com/wbthomason/packer.nvim $HOME/.local/share/nvim/site/pack/packer/start/packer.nvim
 
 # Off we go - based on tmux, the terminal multiplexer
-#CMD ["tmux", "-u", "new", "-s", "main"]
-CMD ["neofetch"]
+CMD ["tmux", "-u", "new", "-s", "main"]
