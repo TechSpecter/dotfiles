@@ -159,7 +159,9 @@ ENV NODE_PATH $NVM_INSTALL_PATH/lib/node_modules
 ENV PATH $NVM_INSTALL_PATH/bin:$PATH
 
 #Setup ZSH with Oh-my-zsh
-RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
+RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" \
+    && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $HOME/powerlevel10k \
+    && echo "source $HOME/powerlevel10k/powerlevel10k.zsh-theme" >> $HOME/.zshrc
 
 # Set up dotfiles and copy the configurations using Stow
 RUN mkdir -p /home/$USERNAME/.config \
