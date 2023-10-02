@@ -168,6 +168,7 @@ RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools
 RUN mkdir -p /home/$USERNAME/.config \
   && git clone https://github.com/TechSpecter/dotfiles.git "$HOME/dotfiles" \
   && cd dotfiles/ \
+  && chmod +x dotsetup \
   && ./dotsetup \
   && stow lf \
   newsboat \
