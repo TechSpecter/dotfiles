@@ -20,10 +20,13 @@
                     },
                     "bash": {
                         "path": "/usr/bin/bash"
+                    },
+                    "zsh": {
+                        "path": "/usr/bin/zsh"
                     }
                 },
-                "terminal.integrated.shell.linux": "tmux",
-                "terminal.integrated.defaultProfile.linux": "tmux"
+                "terminal.integrated.shell.linux": "zsh",
+                "terminal.integrated.defaultProfile.linux": "zsh"
             },
             "extensions": [
                 "stylelint.vscode-stylelint",

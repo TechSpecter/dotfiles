@@ -44,6 +44,7 @@ RUN apt-get update \
   vim-nox \
   w3m \
   wget \
+  zsh \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && locale-gen "en_US.UTF-8" \
@@ -157,19 +158,21 @@ RUN source /home/$USERNAME/.nvm/nvm.sh \
 ENV NODE_PATH $NVM_INSTALL_PATH/lib/node_modules
 ENV PATH $NVM_INSTALL_PATH/bin:$PATH
 
+#Setup ZSH with Oh-my-zsh
+RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
+
 # Set up dotfiles and copy the configurations using Stow
 RUN mkdir -p /home/$USERNAME/.config \
-  && git clone https://github.com/guptar85/dotfiles.git \
-  && cd dotfiles/ \
+  && git clone https://github.com/TechSpecter/dotfiles.git "$HOME/dotfiles" \
+  && echo 'export DOTFILES=$HOME/dotfiles' >> $HOME/.zshrc \
+  && echo 'for rcfile in $DOTFILES/zshrc.d/*.sh; do' >> $HOME/.zshrc \
+  && echo 'source $rcfile' >> $HOME/.zshrc \
+  && echo 'done' >> $HOME/.zshrc \
+  && cd "$HOME/dotfiles" \
   && stow lf \
   newsboat \
   tmux 
 
-RUN echo 'tee -a $HOME/.bashrc << EOF 
-export DOTFILES=$HOME/dotfiles
-for rcfile in $DOTFILES/bashrc.d/*.sh; do 
-source $rcfile
-done 
-EOF'
 # Off we go - based on tmux, the terminal multiplexer
-CMD ["tmux", "-u", "new", "-s", "main"]
+ENTRYPOINT [ "/bin/zsh" ]
+#CMD ["tmux", "-u", "new", "-s", "main"]
