@@ -4,6 +4,7 @@
     },
     "name": "DevContainer",
     "runArgs": [
+        "--name=VSCode-devcontainer",
         "--platform=linux/amd64"
     ],
     "customizations": {
