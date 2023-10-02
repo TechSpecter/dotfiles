@@ -165,5 +165,11 @@ RUN mkdir -p /home/$USERNAME/.config \
   newsboat \
   tmux 
 
+RUN echo 'tee -a $HOME/.bashrc << EOF 
+export DOTFILES=$HOME/dotfiles
+for rcfile in $DOTFILES/bashrc.d/*.sh; do 
+source $rcfile
+done 
+EOF'
 # Off we go - based on tmux, the terminal multiplexer
 CMD ["tmux", "-u", "new", "-s", "main"]
