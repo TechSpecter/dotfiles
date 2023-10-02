@@ -46,6 +46,8 @@
             "path": "/usr/bin/zsh"
           }
         },
+        "terminal.integrated.cursorBlinking": true,
+        "terminal.integrated.rightClickCopyPaste": true,
         "terminal.integrated.fontFamily": "MesloLGS NF",
         "terminal.integrated.shell.osx": "/usr/bin/zsh",
         "terminal.integrated.shell.linux": "zsh",
