@@ -166,11 +166,7 @@ RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools
 RUN mkdir -p /home/$USERNAME/.config \
   && git clone https://github.com/TechSpecter/dotfiles.git "$HOME/dotfiles" \
   && cd dotfiles/ \
-  && ./dotsetup \
-  && stow lf \
-  newsboat \
-  tmux \
-  neovim
+  && ./dotsetup 
 
 # Off we go - based on tmux, the terminal multiplexer
 ENTRYPOINT [ "/bin/zsh" ]
