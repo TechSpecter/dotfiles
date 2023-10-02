@@ -80,15 +80,10 @@ ZSH_THEME="simple" #"powerlevel10k/powerlevel10k"
 plugins=(
 	git
 	tmux
-    fzf
-	zsh-autosuggestions	
-	zsh-syntax-highlighting
-	zsh-history-substring-search
-	auto-notify
 )
 
 ZSH_TMUX_AUTOSTART=true
-ZSH_TMUX_CONFIG=$HOME/.config/tmux/.tmux.conf
+ZSH_TMUX_CONFIG=$HOME/.config/tmux/tmux.conf
 
 source $ZSH/oh-my-zsh.sh
 
@@ -121,16 +116,7 @@ source $ZSH/oh-my-zsh.sh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-export DOTFILES="$HOME/.dotfiles"
+export DOTFILES="$HOME/dotfiles"
 for rcfile in "$DOTFILES"/zshrc.d/*.sh; do
   source "$rcfile"
 done
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
-
-autoload -U +X bashcompinit && bashcompinit
-complete -o nospace -C /opt/homebrew/bin/terraform terraform
-
-#To use fzf in Vim, add the following line to your .vimrc:
-set rtp+=/opt/homebrew/opt/fzf

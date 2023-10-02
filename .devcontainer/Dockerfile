@@ -161,18 +161,14 @@ ENV PATH $NVM_INSTALL_PATH/bin:$PATH
 #Setup ZSH with Oh-my-zsh
 RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" \
   && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k \
-  && echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> $HOME/.zshrc
+  && echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> $HOME/.zshrc \
+  && cp powerlevel10k/.p10k.zsh $HOME/ 
 
 # Set up dotfiles and copy the configurations using Stow
 RUN mkdir -p /home/$USERNAME/.config \
   && git clone https://github.com/TechSpecter/dotfiles.git "$HOME/dotfiles" \
-  && echo 'export DOTFILES=$HOME/dotfiles' >> $HOME/.zshrc \
-  && echo 'for rcfile in $DOTFILES/zshrc.d/*.sh; do' >> $HOME/.zshrc \
-  && echo 'source $rcfile' >> $HOME/.zshrc \
-  && echo 'done' >> $HOME/.zshrc \
-  && cd "$HOME/dotfiles" \
-  && cp powerlevel10k/.p10k.zsh $HOME/ \
-  && echo '[[ ! -f $HOME/.p10k.zsh ]] || source $HOME/.p10k.zsh' >> $HOME/.zshrc \
+  && cd dotfiles/ \
+  && ./dotsetup \
   && stow lf \
   newsboat \
   tmux

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Dotfiles setup - use after cloning dotfiles repo to .dotfiles
+
+dotfiles="$HOME/dotfiles"
+FILES="$dotfiles/zshrc"
+
+# Files
+for f in $FILES; do
+  ln -s -f "$f" "$HOME/.$f"
+done
