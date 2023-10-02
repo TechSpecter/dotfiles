@@ -169,7 +169,8 @@ RUN mkdir -p /home/$USERNAME/.config \
   && ./dotsetup \
   && stow lf \
   newsboat \
-  tmux
+  tmux \
+  neovim
 
 # Off we go - based on tmux, the terminal multiplexer
 ENTRYPOINT [ "/bin/zsh" ]
