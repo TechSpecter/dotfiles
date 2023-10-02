@@ -160,8 +160,8 @@ ENV PATH $NVM_INSTALL_PATH/bin:$PATH
 
 #Setup ZSH with Oh-my-zsh
 RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" \
-  && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $HOME/powerlevel10k \
-  && echo "source $HOME/powerlevel10k/powerlevel10k.zsh-theme" >> $HOME/.zshrc
+  && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k \
+  && echo 'ZSH_THEME="powerlevel10k/powerlevel10k"' >> $HOME/.zshrc
 
 # Set up dotfiles and copy the configurations using Stow
 RUN mkdir -p /home/$USERNAME/.config \
@@ -172,6 +172,7 @@ RUN mkdir -p /home/$USERNAME/.config \
   && echo 'done' >> $HOME/.zshrc \
   && cd "$HOME/dotfiles" \
   && cp powerlevel10k/.p10k.zsh $HOME/ \
+  && echo '[[ ! -f $HOME/.p10k.zsh ]] || source $HOME/.p10k.zsh' >> $HOME/.zshrc \
   && stow lf \
   newsboat \
   tmux
