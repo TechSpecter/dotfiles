@@ -8,3 +8,9 @@ dotfiles="$HOME/dotfiles"
 for i in zshrc p10k.zsh; do
   ln -s -f "$dotfiles/$i" "$HOME/.$i"
 done
+
+cd $dotfiles \
+&& stow lf \
+   newsboat \
+   tmux \
+   neovim
