@@ -46,6 +46,8 @@
             "path": "/usr/bin/zsh"
           }
         },
+        "terminal.integrated.fontFamily": "MesloLGS NF",
+        "terminal.integrated.shell.osx": "/usr/bin/zsh",
         "terminal.integrated.shell.linux": "zsh",
         "terminal.integrated.defaultProfile.linux": "zsh"
       },
