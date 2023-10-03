@@ -79,7 +79,11 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
 	git
-  tmux
+  	tmux
+	fzf
+	zsh-autosuggestions
+	zsh-syntax-highlighting
+	zsh-history-substring-search
 )
 
 ZSH_TMUX_AUTOSTART=true
@@ -120,3 +124,4 @@ export DOTFILES="$HOME/dotfiles"
 for rcfile in "$DOTFILES"/zshrc.d/*.sh; do
   source "$rcfile"
 done
+set rtp+=/opt/homebrew/opt/fzf
