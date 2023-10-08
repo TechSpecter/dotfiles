@@ -68,7 +68,7 @@ RUN cd /tmp/ \
   && cd "neovim-${NVIMVER}" \
   && make CMAKE_BUILD_TYPE=RelWithDebInfo \
   && cd build \
-  && cpack -G DEB && sudo dpkg -i nvim-linux64.deb
+  && cpack -G DEB && dpkg -i nvim-linux64.deb
 
 # Install tmux - terminal multiplexer
 ARG TMUXVER=3.2a
