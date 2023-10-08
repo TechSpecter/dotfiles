@@ -8,6 +8,7 @@ RUN apt-get update \
   bc \
   build-essential \
   ca-certificates \
+  cmake \
   cron \
   curl \
   entr \
@@ -15,6 +16,7 @@ RUN apt-get update \
   fd-find \
   file \
   fzf \
+  gettext \
   gnupg \
   highlight \
   iputils-ping \
@@ -31,6 +33,7 @@ RUN apt-get update \
   ncurses-dev \
   neofetch \
   newsboat \
+  ninja-build \
   openssh-server \
   pandoc \
   pass \
@@ -56,16 +59,16 @@ ARG DEST=/usr/local/bin
 #RUN ARCH=echo "$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)"
 ARG ARCH=amd64
 
-# Install neovim from release deb distribution
-#ARG NVIMVER=0.9.1
-#RUN curl -sLO "https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.tar.gz" && tar -xzvf nvim-linux64.tar.gz \
-#  && cp ./nvim-linux64/bin/nvim "$DEST"
-
 # Install nvim from release deb distribution
-ARG NVIMVER=0.8.0
+ARG NVIMVER=0.9.2
 RUN cd /tmp/ \
-  && curl -sLO https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.deb \
-  && apt install ./nvim-linux64.deb
+#  && curl -sLO https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.deb \
+#  && apt install ./nvim-linux64.deb
+  && wget -qO- "https://github.com/neovim/neovim/archive/refs/tags/v0.9.2.tar.gz" |  tar -xzvf - \
+  && cd "neovim-${NVIMVER}" \
+  && make CMAKE_BUILD_TYPE=RelWithDebInfo \
+  && cd build \
+  && cpack -G DEB && sudo dpkg -i nvim-linux64.deb
 
 # Install tmux - terminal multiplexer
 ARG TMUXVER=3.2a
