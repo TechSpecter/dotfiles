@@ -59,11 +59,18 @@ ARG DEST=/usr/local/bin
 #RUN ARCH=echo "$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)"
 ARG ARCH=amd64
 
+# Install lazygit
+ARG LAZYGITVER=0.40.2
+RUN cd /tmp/ \ 
+  && curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGITVER}/lazygit_${LAZYGITVER}_Linux_x86_64.tar.gz" \
+  && tar xf lazygit.tar.gz lazygit \
+  && install lazygit $DEST
+
 # Install nvim from release deb distribution
 ARG NVIMVER=0.9.2
 RUN cd /tmp/ \
-#  && curl -sLO https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.deb \
-#  && apt install ./nvim-linux64.deb
+  #  && curl -sLO https://github.com/neovim/neovim/releases/download/v${NVIMVER}/nvim-linux64.deb \
+  #  && apt install ./nvim-linux64.deb
   && wget -qO- "https://github.com/neovim/neovim/archive/refs/tags/v0.9.2.tar.gz" |  tar -xzvf - \
   && cd "neovim-${NVIMVER}" \
   && make CMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -162,14 +169,14 @@ ENV NODE_PATH $NVM_INSTALL_PATH/lib/node_modules
 ENV PATH $NVM_INSTALL_PATH/bin:$PATH
 
 #Setup ZSH with Oh-my-zsh
-RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" \
+RUN /bin/sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" \
   && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k \
   && git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions \
   && git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting \
   && git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
 
 # Set up dotfiles and copy the configurations using Stow
-RUN mkdir -p /home/$USERNAME/.config \
+RUN mkdir -p $HOME/.config \
   && git clone https://github.com/TechSpecter/dotfiles.git "$HOME/dotfiles" \
   && cd dotfiles/ \
   && ./dotsetup 
