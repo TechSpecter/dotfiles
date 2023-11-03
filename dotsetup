@@ -1,16 +1,90 @@
 #!/usr/bin/env bash
 
-# Dotfiles setup - use after cloning dotfiles repo to .dotfiles
+# Define colors for highlighting output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
 
+# Function to display success message
+success() {
+  echo -e "${GREEN}Success:${NC} $1"
+}
+
+# Function to display error message and exit
+error() {
+  echo -e "${RED}Error:${NC} $1"
+  exit 1
+}
+
+# Update the package list and upgrade the system
+echo -e "${GREEN}Updating package list and upgrading system...${NC}"
+sudo apt update && sudo apt upgrade -y
+success "System updated and upgraded"
+
+# Install necessary apt-get packages
+echo -e "${GREEN}Installing packages"
+sudo apt install -y \
+  apt-transport-https \
+  bash-completion \
+  bc \
+  build-essential \
+  ca-certificates \
+  cmake \
+  cron \
+  curl \
+  entr \
+  exiftool \
+  fd-find \
+  file \
+  fzf \
+  gettext \
+  gnupg \
+  highlight \
+  iputils-ping \
+  jq \
+  libevent-dev \
+  libgraph-easy-perl \
+  locales \
+  locales-all \
+  lsb-release \
+  lynx \
+  man \
+  miller \
+  ncat \
+  ncurses-dev \
+  neofetch \
+  newsboat \
+  ninja-build \
+  openssh-server \
+  pandoc \
+  pass \
+  ripgrep \
+  shellcheck \
+  stow \
+  sudo \
+  toot \
+  unzip \
+  uuid-runtime \
+  vim-nox \
+  w3m \
+  wget \
+  zsh 
+success "Packages installed"
+
+# Dotfiles setup - use after cloning dotfiles repo to .dotfiles
 dotfiles="$HOME/dotfiles"
+success "Cloning successfull"
 
 # Files
 for i in zshrc p10k.zsh; do
   ln -s -f "$dotfiles/$i" "$HOME/.$i"
 done
+success "Symbolic link created"
 
 cd $dotfiles \
 && stow lf \
    newsboat \
    tmux \
    neovim
+
+echo -e "${GREEN}Setup complete.${NC}"
